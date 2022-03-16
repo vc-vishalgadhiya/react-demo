@@ -32,6 +32,7 @@ function Pokemon() {
         fetch("https://pokeapi.co/api/v2/pokemon/" + value)
             .then(res => res.json())
             .then((res) => {
+                res.color = Math.floor(Math.random()*16777215).toString(16);
                 setSquads(prevState => [...prevState, res])
                 setSelectedPokemon({
                     image: res.sprites.back_default,
@@ -77,12 +78,12 @@ function Pokemon() {
                 <div className="container">
                     <div className="row justify-content-center">
                         {squads.map((squad) =>
-                        <div key={squad.name} className="col-2 m-1 bg-secondary rounded" style={{width: "200px"}}>
-                            <div className="float-end"><a href="#" onClick={() => handleRemove(squad.name)}  className="text-decoration-none text-danger">X</a></div>
-                            <img className="pt-5" src={squad.sprites.back_default} alt=""/>
-                            <div className="text-capitalize">{squad.name}</div>
-                            <div className="text-capitalize pb-5 mb-5">{squad.moves[0].move.name}</div>
-                        </div>
+                            <div key={squad.name} className="col-2 m-1 rounded" style={{width: "200px", backgroundColor: "#" + squad.color}}>
+                                <div className="float-end pt-1"><a href="#" onClick={() => handleRemove(squad.name)}  className="text-decoration-none text-danger">X</a></div>
+                                <img className="pt-5" src={squad.sprites.back_default} alt=""/>
+                                <div className="text-capitalize">{squad.name}</div>
+                                <div className="text-capitalize pb-5 mb-5">{squad.moves[0].move.name}</div>
+                            </div>
                         )}
                     </div>
                 </div>
