@@ -5,39 +5,33 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
     const [items, setItems] = React.useState([]);
-    //const [options, setOptions] = React.useState([]);
+    const [options, setOptions] = React.useState('');
     const [value, setValue] = React.useState('');
+    //const [selectedItems, setSelectedItems] = React.useState('');
 
     React.useEffect(() => {
         fetch("https://pokeapi.co/api/v2/pokemon")
             .then(res => res.json())
-            .then((res) => setItems(res['results']));
+            .then((res) => {
+                let data = res['results'];
+                setItems(data);
+                setOptions(data.map((item) =>
+                    <option className="text-capitalize" key={item.name}>{item.name}</option>
+                ));
+            });
     }, []);
-    let selectedItems = [];
-    let options = [];
 
-    function setOptions()
-    {
-        options = items.map((item, index) => {
-            if (!selectedItems.includes(index)) {
-                return <option key={index} value={index}>{item.name}</option>;
-            }
-        });
-    }
-    setOptions()
-    /*const options = items.map((item, index) => {
-        if (!selectedItems.includes(index)) {
-            return {
-                value: index,
-                label: item.name
-            }
-        }
-    });*/
+    let selectedOptions = [];
+
     function handleChange(event) {
-        console.log(event.target.value);
+        selectedOptions.push(event.target.value);
+        console.log(selectedOptions);
+        setOptions(items.map((item) => {
+            if (!selectedOptions.includes(item.name)) {
+                return <option className="text-capitalize" key={item.name}>{item.name}</option>
+            }
+        }));
         setValue('');
-        selectedItems.push(event.target.value);
-
     }
 
     return (
