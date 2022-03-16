@@ -3,54 +3,92 @@ import logo from './logo.png';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-function App() {
+function Pokemon() {
     const [items, setItems] = React.useState([]);
-    const [options, setOptions] = React.useState('');
-    const [value, setValue] = React.useState('');
-    //const [selectedItems, setSelectedItems] = React.useState('');
+    const [selectedOptions, setSelectedOptions] = React.useState([]);
+    const [squads, setSquads] = React.useState([]);
+    const [selectedPokemon, setSelectedPokemon] = React.useState({
+        image: '',
+        name: '',
+        stats: []
+    });
 
     React.useEffect(() => {
         fetch("https://pokeapi.co/api/v2/pokemon")
             .then(res => res.json())
-            .then((res) => {
-                let data = res['results'];
-                setItems(data);
-                setOptions(data.map((item) =>
-                    <option className="text-capitalize" key={item.name}>{item.name}</option>
-                ));
-            });
+            .then((res) => setItems(res['results']));
     }, []);
 
-    let selectedOptions = [];
+    React.useEffect(() => {
+        setItems(items.filter(i => !selectedOptions.includes(i.name)));
+    }, [selectedOptions]);
 
     function handleChange(event) {
-        selectedOptions.push(event.target.value);
-        console.log(selectedOptions);
-        setOptions(items.map((item) => {
-            if (!selectedOptions.includes(item.name)) {
-                return <option className="text-capitalize" key={item.name}>{item.name}</option>
-            }
-        }));
-        setValue('');
+        if(squads.length === 6) {
+            return;
+        }
+        let value = event.target.value;
+        setSelectedOptions(prevState => [...prevState, value]);
+        fetch("https://pokeapi.co/api/v2/pokemon/" + value)
+            .then(res => res.json())
+            .then((res) => {
+                setSquads(prevState => [...prevState, res])
+                setSelectedPokemon({
+                    image: res.sprites.back_default,
+                    name: res.name,
+                    stats: res.stats
+                })
+            });
+    }
+
+    function handleRemove(name) {
+        setSquads(squads.filter(squad => squad.name !== name));
     }
 
     return (
-        <div>
+        <div className="p-2">
             <div className="App">
                 <div className="logo"><img src={logo} className="App-logo" alt="logo" /></div>
                 <h4 className="mt-4 text-info">Select a Pokemon</h4>
             </div>
             <div className="container col-6">
-                <select className="form-select" value={value} onChange={handleChange}>
+                <select className="form-select" onChange={handleChange}>
                     <option>Select Pokemon</option>
-                    {options}
+                    {items.map((item) =>
+                        <option className="text-capitalize" key={item.name}>{item.name}</option>
+                    )}
                 </select>
             </div>
-            <div className="App">
+            <div className="App pb-5">
                 <h2 className="mt-5 text-info">Selected Pokemon</h2>
+                <img src={selectedPokemon.image}  alt=""/>
+                <h4>{selectedPokemon.name}</h4>
+                <div className="container col-8">
+                    <div className="row justify-content-center">
+                        {selectedPokemon.stats.map((stat) =>
+                            <div key={stat.stat.name} className="col-3 p-2 m-1 bg-secondary text-uppercase">
+                                {stat.base_stat} <br/> {stat.stat.name}
+                            </div>
+                        )}
+                    </div>
+                </div>
+                {squads.length === 6 && <div className="mt-5 col-8 justify-content-center container p-1 border border-warning">Squad is Full</div>}
+                <h2 className="mt-5 text-info">Selected Squad</h2>
+                <div className="container">
+                    <div className="row justify-content-center">
+                        {squads.map((squad) =>
+                        <div key={squad.name} className="col-2 m-1 bg-secondary rounded" style={{width: "200px"}}>
+                            <div className="float-end"><a href="#" onClick={() => handleRemove(squad.name)}  className="text-decoration-none text-danger">X</a></div>
+                            <img className="pt-5" src={squad.sprites.back_default} alt=""/>
+                            <div className="text-capitalize">{squad.name}</div>
+                            <div className="text-capitalize pb-5 mb-5">{squad.moves[0].move.name}</div>
+                        </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );
 }
 
-export default App;
+export default Pokemon;
